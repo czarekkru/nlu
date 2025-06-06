@@ -55,9 +55,13 @@ def train_loop(data, optimizer, criterion, model, clip=5):
     number_of_tokens = []
     
     for sample in data:
+        # Przenieś dane na GPU
+        source = sample['source'].to(model.device)
+        target = sample['target'].to(model.device)
+        
         optimizer.zero_grad()
-        output = model(sample['source'])
-        loss = criterion(output, sample['target'])
+        output = model(source)
+        loss = criterion(output, target)
         loss_array.append(loss.item() * sample["number_tokens"])
         number_of_tokens.append(sample["number_tokens"])
         loss.backward()
@@ -84,8 +88,12 @@ def eval_loop(data, eval_criterion, model):
     
     with torch.no_grad():
         for sample in data:
-            output = model(sample['source'])
-            loss = eval_criterion(output, sample['target'])
+            # Przenieś dane na GPU
+            source = sample['source'].to(model.device)
+            target = sample['target'].to(model.device)
+            
+            output = model(source)
+            loss = eval_criterion(output, target)
             loss_array.append(loss.item())
             number_of_tokens.append(sample["number_tokens"])
             

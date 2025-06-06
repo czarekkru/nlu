@@ -157,7 +157,11 @@ def collate_fn(data):
         if isinstance(data[0][key], torch.Tensor):
             batch[key] = torch.stack([d[key] for d in data])
         else:
-            batch[key] = [d[key] for d in data]
+            # Convert lists to tensors
+            if key == 'intent_labels':
+                batch[key] = torch.tensor([d[key] for d in data])
+            else:
+                batch[key] = [d[key] for d in data]
     return batch
 
 if __name__ == "__main__":
@@ -166,8 +170,8 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     
     # Load data
-    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))))
-    dataset_path = os.path.normpath(os.path.join(base_path, "labs", "dataset", "ATIS"))
+    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    dataset_path = os.path.normpath(os.path.join(base_path, "dataset", "ATIS"))
     train_raw = load_data(os.path.join(dataset_path, "train.json"))
     test_raw = load_data(os.path.join(dataset_path, "test.json"))
     
@@ -215,18 +219,18 @@ if __name__ == "__main__":
     # Create dataloaders
     train_loader = data.DataLoader(
         train_dataset, 
-        batch_size=16, 
+        batch_size=8, # 16 changed
         collate_fn=collate_fn, 
         shuffle=True
     )
     dev_loader = data.DataLoader(
         dev_dataset, 
-        batch_size=16, 
+        batch_size=8, # 16 changed
         collate_fn=collate_fn
     )
     test_loader = data.DataLoader(
         test_dataset, 
-        batch_size=16, 
+        batch_size=8, # 16 changed
         collate_fn=collate_fn
     )
     
@@ -239,7 +243,7 @@ if __name__ == "__main__":
         out_slot=out_slot,
         out_int=out_int,
         bert_model_name='bert-base-uncased',
-        dropout=0.1
+        dropout=0.5 # 0.1 changed
     ).to(device)
     
     # Train model
@@ -250,9 +254,9 @@ if __name__ == "__main__":
         test_loader=test_loader,
         id2slot=lang.id2slot,
         id2intent=lang.id2intent,
-        learning_rate=2e-5,
-        n_epochs=10,
-        patience=3
+        learning_rate=2e-5, # 2e-5 changed
+        n_epochs=3, # 10 changed
+        patience=3 # 3 changed
     )
     
     # Print final results

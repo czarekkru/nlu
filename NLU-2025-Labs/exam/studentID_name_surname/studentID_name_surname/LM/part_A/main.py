@@ -103,8 +103,8 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     
     # Load data
-    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))))
-    dataset_path = os.path.normpath(os.path.join(base_path, "labs", "dataset", "PennTreeBank"))
+    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    dataset_path = os.path.normpath(os.path.join(base_path, "dataset", "PennTreeBank"))
     train_raw = read_file(os.path.join(dataset_path, "ptb.train.txt"))
     dev_raw = read_file(os.path.join(dataset_path, "ptb.valid.txt"))
     test_raw = read_file(os.path.join(dataset_path, "ptb.test.txt"))
@@ -136,8 +136,8 @@ if __name__ == "__main__":
     )
     
     # Model hyperparameters
-    emb_size = 100 # 300 changed
-    hidden_size = 100 # 200 changed
+    emb_size = 300
+    hidden_size = 200
     vocab_len = len(lang.word2id)
     
     # Create and initialize model
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         dev_loader=dev_loader,
         test_loader=test_loader,
         learning_rate=0.001,  # Try different learning rates
-        n_epochs=1, # 100 changed
+        n_epochs=3, # 100 changed
         patience=3
     )
     

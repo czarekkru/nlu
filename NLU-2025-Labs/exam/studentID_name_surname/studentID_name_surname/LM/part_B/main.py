@@ -38,9 +38,10 @@ class Lang:
 
 class PennTreeBank(data.Dataset):
     """Penn TreeBank dataset class."""
-    def __init__(self, corpus, lang):
+    def __init__(self, corpus, lang, device='cpu'):
         self.source = []
         self.target = []
+        self.device = device
         
         for sentence in corpus:
             self.source.append(sentence.split()[0:-1])
@@ -53,8 +54,8 @@ class PennTreeBank(data.Dataset):
         return len(self.source)
 
     def __getitem__(self, idx):
-        src = torch.LongTensor(self.source_ids[idx])
-        trg = torch.LongTensor(self.target_ids[idx])
+        src = torch.LongTensor(self.source_ids[idx]).to(self.device)
+        trg = torch.LongTensor(self.target_ids[idx]).to(self.device)
         sample = {'source': src, 'target': trg}
         return sample
     
@@ -72,12 +73,12 @@ class PennTreeBank(data.Dataset):
             res.append(tmp_seq)
         return res
 
-def collate_fn(data, pad_token):
+def collate_fn(data, pad_token, device='cpu'):
     """Collate function for DataLoader."""
     def merge(sequences):
         lengths = [len(seq) for seq in sequences]
         max_len = 1 if max(lengths)==0 else max(lengths)
-        padded_seqs = torch.LongTensor(len(sequences),max_len).fill_(pad_token)
+        padded_seqs = torch.LongTensor(len(sequences),max_len).fill_(pad_token).to(device)
         for i, seq in enumerate(sequences):
             end = lengths[i]
             padded_seqs[i, :end] = seq
@@ -103,8 +104,8 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     
     # Load data
-    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))))
-    dataset_path = os.path.normpath(os.path.join(base_path, "labs", "dataset", "PennTreeBank"))
+    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    dataset_path = os.path.normpath(os.path.join(base_path, "dataset", "PennTreeBank"))
     train_raw = read_file(os.path.join(dataset_path, "ptb.train.txt"))
     dev_raw = read_file(os.path.join(dataset_path, "ptb.valid.txt"))
     test_raw = read_file(os.path.join(dataset_path, "ptb.test.txt"))
@@ -113,31 +114,31 @@ if __name__ == "__main__":
     lang = Lang(train_raw, ["<pad>", "<eos>"])
     
     # Create datasets
-    train_dataset = PennTreeBank(train_raw, lang)
-    dev_dataset = PennTreeBank(dev_raw, lang)
-    test_dataset = PennTreeBank(test_raw, lang)
+    train_dataset = PennTreeBank(train_raw, lang, device)
+    dev_dataset = PennTreeBank(dev_raw, lang, device)
+    test_dataset = PennTreeBank(test_raw, lang, device)
     
     # Create dataloaders
     train_loader = data.DataLoader(
         train_dataset, 
-        batch_size=64, 
-        collate_fn=lambda x: collate_fn(x, lang.word2id["<pad>"]),
+        batch_size=16, # 64 changed
+        collate_fn=lambda x: collate_fn(x, lang.word2id["<pad>"], device),
         shuffle=True
     )
     dev_loader = data.DataLoader(
         dev_dataset, 
-        batch_size=128, 
-        collate_fn=lambda x: collate_fn(x, lang.word2id["<pad>"])
+        batch_size=32, # 128 changed
+        collate_fn=lambda x: collate_fn(x, lang.word2id["<pad>"], device)
     )
     test_loader = data.DataLoader(
         test_dataset, 
-        batch_size=128, 
-        collate_fn=lambda x: collate_fn(x, lang.word2id["<pad>"])
+        batch_size=32, # 128 changed
+        collate_fn=lambda x: collate_fn(x, lang.word2id["<pad>"], device)
     )
     
     # Model hyperparameters
-    emb_size = 300
-    hidden_size = 200
+    emb_size = 400 # 300 changed
+    hidden_size = 400  # Changed from 200 to match emb_size for weight tying
     vocab_len = len(lang.word2id)
     
     # Create and initialize model
@@ -160,8 +161,8 @@ if __name__ == "__main__":
         train_loader=train_loader,
         dev_loader=dev_loader,
         test_loader=test_loader,
-        learning_rate=0.1,  # Higher learning rate for AvSGD
-        n_epochs=100,
+        learning_rate=1,  # 0.1 changed # Higher learning rate for AvSGD
+        n_epochs=3, # 100 changed
         patience=3,
         use_avsgd=True
     )

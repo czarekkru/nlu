@@ -24,6 +24,8 @@ class LM_LSTM(nn.Module):
                  emb_dropout=0.1, out_dropout=0.1, n_layers=1):
         super(LM_LSTM, self).__init__()
         
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
         # Token ids to vectors
         self.embedding = nn.Embedding(output_size, emb_size, padding_idx=pad_index)
         

@@ -141,8 +141,8 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     
     # Load data
-    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))))
-    dataset_path = os.path.normpath(os.path.join(base_path, "labs", "dataset", "ATIS"))
+    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    dataset_path = os.path.normpath(os.path.join(base_path, "dataset", "ATIS"))
     train_raw = load_data(os.path.join(dataset_path, "train.json"))
     test_raw = load_data(os.path.join(dataset_path, "test.json"))
     
@@ -231,7 +231,7 @@ if __name__ == "__main__":
         test_loader=test_loader,
         lang=lang,
         learning_rate=0.001,
-        n_epochs=100,
+        n_epochs=50, # 100 changed
         patience=3
     )
     

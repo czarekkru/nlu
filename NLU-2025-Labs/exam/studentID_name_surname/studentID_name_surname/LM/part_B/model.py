@@ -66,12 +66,15 @@ class LM_LSTM_Enhanced(nn.Module):
         # Linear layer to project the hidden layer to output space
         self.output = nn.Linear(hidden_size, output_size)
         
-        # Weight tying
+        # Weight tying - ensure hidden_size equals emb_size
         if use_weight_tying:
+            assert hidden_size == emb_size, "For weight tying, hidden_size must equal emb_size"
             self.output.weight = self.embedding.weight
         
         self.pad_token = pad_index
         self.use_weight_tying = use_weight_tying
+        self.hidden_size = hidden_size
+        self.emb_size = emb_size
         
     def forward(self, input_sequence):
         """
